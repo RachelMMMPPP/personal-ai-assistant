@@ -39,14 +39,11 @@ WhatsApp conversations better reflect my natural, everyday tone compared to form
 
 ### Step 2: Model Training & Comparison
 
-Fine-tuned 4 open-source models using **LoRA** on Google Colab, with each training run taking several hours:
+Fine-tuned open-source models using **LoRA** on Google Colab, with each training run taking several hours:
 
 | Model | Parameters |
 |---|---|
 | Gemma-2B | 2B |
-| Phi-4 | 14B |
-| Llama 3.1 | 8B |
-| Qwen-2.5 | 7B |
 
 Two rounds of experiments were conducted:
 - **Demo 1**: ~5,000 original samples
@@ -60,21 +57,21 @@ Two rounds of experiments were conducted:
 
 **Demo 1 (~5,000 samples)**
 
-| Metric | GPT Baseline | Llama3.1-8B | Phi4 | Gemma-2B | Qwen-2.5 |
-|---|---|---|---|---|---|
-| Toxicity | 0.0005 | 0.0058 | 0.0024 | 0.0021 | 0.0014 |
-| Cosine Similarity | 0.8049 | 0.8199 | 0.8562 | 0.8191 | 0.7995 |
-| Context Relevance | 0.713 | 0.796 | 0.7633 | 0.86 | 0.6595 |
-| Style Similarity | 0.666 | 0.738 | 0.7769 | 0.812 | 0.6595 |
+| Metric | GPT Baseline | Gemma-2B | 
+|---|---|---|
+| Toxicity | 0.0005 | 0.0058 | 0.0014 |
+| Cosine Similarity | 0.8049 | 0.8191 | 
+| Context Relevance | 0.713  | 0.86 | 
+| Style Similarity | 0.666   | 0.812 | 
 
 **Demo 2 (~7,700 samples, after data augmentation)**
 
-| Metric | GPT Baseline | Llama3.1-8B | Phi4 | Gemma-2B | Qwen-2.5 |
-|---|---|---|---|---|---|
-| Toxicity | 0.0013 | 0.0015 | 0.0022 | 0.0013 | 0.0023 |
-| Cosine Similarity | 0.8376 | 0.8229 | 0.7959 | 0.8455 | 0.8047 |
-| Context Relevance | 0.735 | 0.819 | 0.8168 | 0.854 | 0.6705 |
-| Style Similarity | 0.6926 | 0.7107 | 0.7939 | 0.804 | 0.6137 |
+| Metric | GPT Baseline| Gemma-2B |
+|---|---|---|
+| Toxicity | 0.0013 | 0.0015 | 0.0023 |
+| Cosine Similarity | 0.8376 | 0.8455 | 
+| Context Relevance | 0.735 | 0.854 | 
+| Style Similarity | 0.6926 | | 0.804 |
 
 **Key Findings:**
 - Data augmentation improved overall performance across models
@@ -89,9 +86,6 @@ Performance on MMLU benchmark (57 domains covering STEM, Humanities, etc.) befor
 
 | Model | Original Score | Fine-Tuned Score |
 |---|---|---|
-| Phi4 | 84.8 | 73.4 |
-| Llama3.1-8B | 66.7 | 57.6 |
-| Qwen-2.5 | 65.6 | 58.0 |
 | Gemma-2B | 51.3 | 32.6 |
 
 **Observation:** All models show a consistent drop in general knowledge after fine-tuning. This is a known trade-off — as models specialize in a specific style, they lose some broad general capability. This highlights the **tension between personalization and general intelligence**.
