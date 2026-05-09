@@ -1,4 +1,4 @@
-# 个人AI助手 — 用我自己的口吻自动回复
+<img width="1401" height="664" alt="Screenshot 2026-05-08 at 6 45 52 PM" src="https://github.com/user-attachments/assets/9c7d0a95-9df7-436f-a0a1-9c44a4531865" /># 个人AI助手 — 用我自己的口吻自动回复
 
 ## 项目简介
 
@@ -12,6 +12,7 @@
 
 ### 方案一：调用现有大模型（当前项目）
 直接接入 **Claude API**，通过 Prompt Engineering 让模型模仿我的语气生成回复草稿，配合 Gmail API 实现邮件读取和草稿保存。
+
 
 ### 方案二：训练自己的模型（探索版）
 收集个人数据，对比微调多个开源模型，部署后提供个性化回复服务。
@@ -276,3 +277,5 @@ Claude claude-opus-4-7              ← SSE 流式输出（自适应思考）
 
 - Gmail OAuth2 scope 仅为只读（`gmail.readonly`），不会修改或发送邮件
 - `.chroma_db/` 目录为本地向量库，不提交 git
+## demo:
+![Uploading Screenshot 2026-05-08 at 6.45.52 PM.png…]()
