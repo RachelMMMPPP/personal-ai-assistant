@@ -1,169 +1,177 @@
-# 个人AI助手 — 用我自己的口吻自动回复
+# Personal AI Assistant — Auto-Reply in My Own Voice
 
-## 项目简介
+## Project Overview
 
-这个项目的目标是训练一个"懂我"的AI助手，能够用**我自己的语气和风格**自动生成邮件回复草稿。
+This project builds a personal AI assistant that reads my emails and generates reply drafts that sound like **me** — matching my personal tone and writing style.
 
-项目最初希望同时实现Gmail和WhatsApp的自动回复。我收集了两个平台的个人数据进行模型训练，但WhatsApp遇到了限制——个人账户无法直接使用自动回复，必须申请**WhatsApp Business API**并完成企业认证，对个人项目门槛较高。因此目前以Gmail为主要演示。
-
----
-
-## 两种实现方案
-
-### 方案一：调用现有大模型（当前项目）
-直接接入 **Claude API**，通过 Prompt Engineering 让模型模仿我的语气生成回复草稿，配合 Gmail API 实现邮件读取和草稿保存。
-
-
-### 方案二：训练自己的模型（探索版）
-收集个人数据，对比微调多个开源模型，部署后提供个性化回复服务。
+The original goal was to automate both Gmail and WhatsApp replies. I collected personal messaging data from both platforms for model training, but ran into a key limitation with WhatsApp — automating replies on a personal account is not officially supported. Using the WhatsApp API requires a **WhatsApp Business Account** with Meta verification, which is inaccessible for personal projects. The current demo therefore focuses on Gmail.
 
 ---
 
-## 方案二详细过程
+## Two Approaches
 
-### 第一步：数据收集
+### Approach 1: Using Existing LLM API (Current Project)
+Directly integrates **Claude API** with Prompt Engineering to mimic my writing style, combined with Gmail API to read emails and save reply drafts.
 
-**Gmail数据**
-- 使用 Gmail API 导出个人历史邮件
-- 提取发件人、收件人、主题、正文，整理成训练格式
-
-**WhatsApp数据**
-- 手动从手机导出聊天记录（.txt 格式）
-- 用 Python 脚本解析，提取对话对（输入→我的回复）
-- 数据增强后从约5000条扩展到约7700条
-
-**为什么要收集WhatsApp数据？**
-
-WhatsApp 的日常对话更能反映我真实的语气和表达习惯，比正式邮件更口语化，两者结合能让模型更全面地学习我的风格。
+### Approach 2: Training My Own Model (Research Version)
+Collected personal messaging data, fine-tuned multiple open-source models, and deployed the best-performing model to generate personalized replies.
 
 ---
 
-### 第二步：模型训练与对比
+## Approach 2 — Detailed Process
 
-对以下4个开源模型进行 LoRA 微调，在 Google Colab 上训练，每次训练数小时：
+### Step 1: Data Collection
 
-| 模型 | 参数量 |
+**Gmail Data**
+- Exported personal email history using Gmail API
+- Extracted sender, recipient, subject, and body, formatted into training pairs
+
+**WhatsApp Data**
+- Manually exported chat history from phone (.txt format)
+- Parsed using a Python script to extract conversation pairs (input → my reply)
+- After data augmentation: ~5,000 → ~7,700 samples
+
+**Why WhatsApp data?**
+
+WhatsApp conversations better reflect my natural, everyday tone compared to formal emails. Combining both sources gives the model a more complete picture of how I communicate.
+
+---
+
+### Step 2: Model Training & Comparison
+
+Fine-tuned 4 open-source models using **LoRA** on Google Colab, with each training run taking several hours:
+
+| Model | Parameters |
 |---|---|
 | Gemma-2B | 2B |
 | Phi-4 | 14B |
 | Llama 3.1 | 8B |
 | Qwen-2.5 | 7B |
 
-进行了两轮实验：
-- **Demo1**：使用约5000条原始数据
-- **Demo2**：数据增强后使用约7700条数据，整体效果有所提升
+Two rounds of experiments were conducted:
+- **Demo 1**: ~5,000 original samples
+- **Demo 2**: ~7,700 samples after data augmentation — overall performance improved
 
 ---
 
-### 第三步：模型评估
+### Step 3: Model Evaluation
 
-#### 评估指标对比（与GPT Baseline相比）
+#### Metric Comparison vs GPT Baseline
 
-**Demo1（约5000条数据）**
+**Demo 1 (~5,000 samples)**
 
-| 指标 | GPT Baseline | Llama3.1-8B | Phi4 | Gemma-2B | Qwen-2.5 |
+| Metric | GPT Baseline | Llama3.1-8B | Phi4 | Gemma-2B | Qwen-2.5 |
 |---|---|---|---|---|---|
 | Toxicity | 0.0005 | 0.0058 | 0.0024 | 0.0021 | 0.0014 |
 | Cosine Similarity | 0.8049 | 0.8199 | 0.8562 | 0.8191 | 0.7995 |
 | Context Relevance | 0.713 | 0.796 | 0.7633 | 0.86 | 0.6595 |
 | Style Similarity | 0.666 | 0.738 | 0.7769 | 0.812 | 0.6595 |
 
-**Demo2（约7700条数据，数据增强后）**
+**Demo 2 (~7,700 samples, after data augmentation)**
 
-| 指标 | GPT Baseline | Llama3.1-8B | Phi4 | Gemma-2B | Qwen-2.5 |
+| Metric | GPT Baseline | Llama3.1-8B | Phi4 | Gemma-2B | Qwen-2.5 |
 |---|---|---|---|---|---|
 | Toxicity | 0.0013 | 0.0015 | 0.0022 | 0.0013 | 0.0023 |
 | Cosine Similarity | 0.8376 | 0.8229 | 0.7959 | 0.8455 | 0.8047 |
 | Context Relevance | 0.735 | 0.819 | 0.8168 | 0.854 | 0.6705 |
 | Style Similarity | 0.6926 | 0.7107 | 0.7939 | 0.804 | 0.6137 |
 
-**主要发现：**
-- 数据增强后整体效果有所提升
-- **Gemma-2B 综合表现最好**，在风格相似度和上下文相关性上超过了 GPT Baseline
-- Qwen-2.5 表现最差
+**Key Findings:**
+- Data augmentation improved overall performance across models
+- **Gemma-2B achieved the best results**, outperforming the GPT Baseline in both Style Similarity and Context Relevance
+- Qwen-2.5 performed the worst among the four models
 
 ---
 
-#### MMLU 通用能力测试
+#### MMLU General Knowledge Test
 
-微调后模型在 MMLU（覆盖57个领域的综合语言理解基准）上的表现：
+Performance on MMLU benchmark (57 domains covering STEM, Humanities, etc.) before and after fine-tuning:
 
-| 模型 | 原始分数 | 微调后分数 |
+| Model | Original Score | Fine-Tuned Score |
 |---|---|---|
 | Phi4 | 84.8 | 73.4 |
 | Llama3.1-8B | 66.7 | 57.6 |
 | Qwen-2.5 | 65.6 | 58.0 |
 | Gemma-2B | 51.3 | 32.6 |
 
-**观察：** 所有模型微调后通用能力均有所下降，这是个性化微调的典型权衡——模型在学习特定风格的同时，会损失一部分通用知识。这也说明**高度个性化和通用能力之间存在 trade-off**。
+**Observation:** All models show a consistent drop in general knowledge after fine-tuning. This is a known trade-off — as models specialize in a specific style, they lose some broad general capability. This highlights the **tension between personalization and general intelligence**.
 
 ---
 
-### 第四步：模型部署
+### Step 4: Model Deployment
 
 **GCP Compute Engine**
-- 启动 GPU 虚拟机，上传微调后的模型权重
-- 优点：稳定，可自定义
-- 缺点：需手动管理服务器，成本较高
+- Launched a GPU VM instance, uploaded fine-tuned model weights
+- Pros: Stable, fully customizable
+- Cons: Requires manual server management, higher cost
 
-**RunPod（也尝试过）**
-- 按需租用 GPU，部署更简单快速
-- 优点：便宜灵活，适合测试阶段
-- 缺点：稳定性相对较低
-
----
-
-## 为什么没有实现WhatsApp自动回复？
-
-使用 WhatsApp API 需要：
-- 注册通过审核的 **WhatsApp Business账户**
-- 一个专用手机号码
-- Meta Business Manager 资质认证
-
-对个人项目门槛太高，因此当前版本仅展示 Gmail 部分。
+**RunPod (also tested)**
+- On-demand GPU rental, simpler and faster to set up
+- Pros: Cost-effective, flexible for testing
+- Cons: Less stable compared to GCP
 
 ---
 
-## 技术栈
+## Why No WhatsApp Auto-Reply?
 
-| 层级 | 技术 |
+Using the WhatsApp API requires:
+- A verified **WhatsApp Business Account**
+- A dedicated phone number registered to the Business API
+- Approval from Meta Business Manager
+
+This makes it inaccessible for personal automation projects, so the current version demonstrates Gmail only.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
 |---|---|
-| 前端 | React + TypeScript + Tailwind CSS |
-| 后端 | Python + FastAPI |
-| 邮件接入 | Gmail API |
-| AI模型（方案一） | Claude API |
-| AI模型（方案二） | Gemma-2B / Phi4 / Llama3.1 / Qwen-2.5 |
-| 微调方式 | LoRA |
-| 训练平台 | Google Colab |
-| 模型部署 | GCP Compute Engine / RunPod |
-| 向量数据库 | ChromaDB |
+| Frontend | React + TypeScript + Tailwind CSS |
+| Backend | Python + FastAPI |
+| Email Integration | Gmail API |
+| AI Model (Approach 1) | Claude API |
+| AI Model (Approach 2) | Gemma-2B / Phi4 / Llama3.1 / Qwen-2.5 |
+| Fine-Tuning Method | LoRA |
+| Training Platform | Google Colab |
+| Model Deployment | GCP Compute Engine / RunPod |
+| Vector Database | ChromaDB |
 
 ---
 
-## 系统架构
+## System Architecture
 
-前端 (React) → 后端 (FastAPI) → Gmail API / Claude API / 自己部署的模型 → 保存草稿到Gmail草稿箱
+```
+Frontend (React)
+    ↓ sends request
+Backend (FastAPI)
+    ↓ fetch emails          ↓ call model
+Gmail API          Claude API / Self-deployed Model
+    ↓ return emails         ↓ generate draft
+        └──→ save draft to Gmail Drafts
+```
 
-# 方案一Gmail × Claude 邮件回复助手
 
-用 Claude AI 生成 Gmail 邮件回复草稿，支持 RAG（基于历史邮件的检索增强生成）。
+# Approach 1: Gmail × Claude Reply Assistant
 
-提供两种使用方式：
-- **Web UI**：FastAPI 后端 + React 前端
-- **CLI**：命令行交互模式
+An AI-powered email reply draft generator that connects Gmail with Claude. Supports RAG (Retrieval-Augmented Generation) using your own email history as context.
 
-## 项目结构
+Available in two modes:
+- **Web UI**: FastAPI backend + React frontend
+- **CLI**: Interactive terminal mode
+
+## Project Structure
 
 ```
 gmail-claude-reply/
-├── api.py             # FastAPI 后端入口
-├── main.py            # CLI 入口（保留）
-├── gmail_client.py    # Gmail API 封装（OAuth2 + MIME 解析）
-├── claude_client.py   # Claude API 封装（流式 + 自适应思考）
-├── vector_store.py    # RAG 层（ChromaDB + OpenAI Embeddings）
+├── api.py             # FastAPI backend entry point
+├── main.py            # CLI entry point
+├── gmail_client.py    # Gmail API wrapper (OAuth2 + MIME parsing)
+├── claude_client.py   # Claude API wrapper (streaming + adaptive thinking)
+├── vector_store.py    # RAG layer (ChromaDB + OpenAI Embeddings)
 ├── requirements.txt
 ├── .env.example
-├── frontend/          # React + Vite + TypeScript 前端
+├── frontend/          # React + Vite + TypeScript frontend
 │   ├── src/
 │   │   ├── App.tsx
 │   │   ├── api.ts
@@ -173,12 +181,12 @@ gmail-claude-reply/
 │   │       ├── EmailDetail.tsx
 │   │       └── DraftPanel.tsx
 │   └── package.json
-└── credentials/       # OAuth2 凭证（不提交 git）
+└── credentials/       # OAuth2 credentials (not committed to git)
 ```
 
-## 快速开始
+## Setup
 
-### 1. Python 依赖
+### 1. Python dependencies
 
 ```bash
 python -m venv .venv
@@ -186,96 +194,94 @@ source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2. 环境变量
+### 2. Environment variables
 
 ```bash
 cp .env.example .env
 ```
 
-编辑 `.env`：
+Edit `.env`:
 
-| 变量 | 说明 |
+| Variable | Description |
 |---|---|
-| `ANTHROPIC_API_KEY` | [Anthropic Console](https://console.anthropic.com) 获取 |
-| `OPENAI_API_KEY` | 可选，用于 RAG embedding；不填则跳过 RAG |
-| `GMAIL_CREDENTIALS_PATH` | OAuth2 凭证路径（默认 `credentials/client_secret.json`） |
-| `GMAIL_TOKEN_PATH` | Token 缓存路径（默认 `credentials/token.json`） |
-| `CHROMA_DB_PATH` | 向量数据库路径（默认 `.chroma_db`） |
+| `ANTHROPIC_API_KEY` | Get from [Anthropic Console](https://console.anthropic.com) |
+| `OPENAI_API_KEY` | Optional — required for RAG embeddings; omit to disable RAG |
+| `GMAIL_CREDENTIALS_PATH` | Path to OAuth2 credentials (default: `credentials/client_secret.json`) |
+| `GMAIL_TOKEN_PATH` | Token cache path (default: `credentials/token.json`) |
+| `CHROMA_DB_PATH` | Vector database path (default: `.chroma_db`) |
 
 ### 3. Gmail OAuth2
 
-1. [Google Cloud Console](https://console.cloud.google.com) → 创建项目 → 启用 Gmail API
-2. 创建 OAuth 2.0 客户端（桌面应用），下载 JSON
-3. 保存为 `credentials/client_secret.json`
-4. 首次启动后端时浏览器会自动打开授权页面，授权后 token 自动缓存
+1. Go to [Google Cloud Console](https://console.cloud.google.com) → create a project → enable the Gmail API
+2. Create an OAuth 2.0 client ID (Desktop app type) and download the JSON file
+3. Save it as `credentials/client_secret.json`
+4. On first launch, a browser window will open for authorization; the token is then cached automatically
 
-### 4. 前端依赖
+### 4. Frontend dependencies
 
 ```bash
 cd frontend
 npm install
 ```
 
-## 运行
+## Running
 
-### Web UI 模式
+### Web UI
 
-终端 1 — 启动后端：
+Terminal 1 — start the backend:
 ```bash
 uvicorn api:app --reload --port 8000
 ```
 
-终端 2 — 启动前端：
+Terminal 2 — start the frontend:
 ```bash
 cd frontend
 npm run dev
 ```
 
-浏览器访问 `http://localhost:5173`
+Open `http://localhost:5173` in your browser.
 
-### CLI 模式
+### CLI
 
 ```bash
-# 交互式生成回复草稿
+# Interactively generate a reply draft
 python main.py
 
-# 索引最近 100 封邮件到向量数据库（启用 RAG）
+# Index the latest 100 emails into the vector database (enables RAG)
 python main.py index
 ```
 
-## API 端点
+## API Reference
 
-| 方法 | 路径 | 说明 |
+| Method | Path | Description |
 |---|---|---|
-| GET | `/api/emails` | 获取最新 10 封邮件 |
-| POST | `/api/index` | 索引最近 100 封邮件 |
-| POST | `/api/draft` | 生成回复草稿（SSE 流式） |
+| GET | `/api/emails` | Fetch the 10 most recent inbox emails |
+| POST | `/api/index` | Index the latest 100 emails into ChromaDB |
+| POST | `/api/draft` | Generate a reply draft (SSE streaming) |
 
-## RAG 架构
+## RAG Architecture
 
 ```
-用户选择邮件
-     │
-     ▼
-search_similar(query, n=5)          ← ChromaDB cosine 检索
-     │
-     ▼
-build_rag_prompt(email, similar)    ← 组装 prompt（相似邮件 + 待回复邮件）
-     │
-     ▼
-Claude claude-opus-4-7              ← SSE 流式输出（自适应思考）
-     │
-     ▼
-前端实时显示草稿
+User selects an email
+        │
+        ▼
+search_similar(query, n=5)        ← ChromaDB cosine similarity search
+        │
+        ▼
+build_rag_prompt(email, similar)  ← Assemble prompt with context + new email
+        │
+        ▼
+Claude claude-opus-4-7            ← SSE streaming (adaptive thinking)
+        │
+        ▼
+Frontend renders draft in real time
 ```
 
-- **向量数据库**：ChromaDB（本地持久化，cosine 相似度）
-- **Embedding 模型**：OpenAI `text-embedding-3-small`
-- **RAG 降级**：未设置 `OPENAI_API_KEY` 时自动跳过，正常生成草稿
+- **Vector database**: ChromaDB (local persistent storage, cosine similarity)
+- **Embedding model**: OpenAI `text-embedding-3-small`
+- **Graceful degradation**: If `OPENAI_API_KEY` is not set, RAG is silently skipped and drafts are generated without historical context
 
-## 注意事项
+## Notes
 
-- Gmail OAuth2 scope 仅为只读（`gmail.readonly`），不会修改或发送邮件
-- `.chroma_db/` 目录为本地向量库，不提交 git
-## demo:
-<img width="1401" height="664" alt="Screenshot 2026-05-08 at 6 45 52 PM" src="https://github.com/user-attachments/assets/9c7d0a95-9df7-436f-a0a1-9c44a4531865" />
+- Gmail OAuth2 scope is read-only (`gmail.readonly`) — the app never modifies or sends emails
+- The `.chroma_db/` directory holds the local vector store and is excluded from git
