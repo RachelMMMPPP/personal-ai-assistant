@@ -1,4 +1,4 @@
-# Personal AI Assistant — Auto-Reply Gmail in My Own Voice
+# Personal AI Assistant — Auto-Reply in My Own Voice
 
 ## Project Overview
 
