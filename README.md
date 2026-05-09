@@ -1,4 +1,4 @@
-<img width="1401" height="664" alt="Screenshot 2026-05-08 at 6 45 52 PM" src="https://github.com/user-attachments/assets/9c7d0a95-9df7-436f-a0a1-9c44a4531865" /># 个人AI助手 — 用我自己的口吻自动回复
+# 个人AI助手 — 用我自己的口吻自动回复
 
 ## 项目简介
 
@@ -278,4 +278,4 @@ Claude claude-opus-4-7              ← SSE 流式输出（自适应思考）
 - Gmail OAuth2 scope 仅为只读（`gmail.readonly`），不会修改或发送邮件
 - `.chroma_db/` 目录为本地向量库，不提交 git
 ## demo:
-![Uploading Screenshot 2026-05-08 at 6.45.52 PM.png…]()
+<img width="1401" height="664" alt="Screenshot 2026-05-08 at 6 45 52 PM" src="https://github.com/user-attachments/assets/9c7d0a95-9df7-436f-a0a1-9c44a4531865" />
